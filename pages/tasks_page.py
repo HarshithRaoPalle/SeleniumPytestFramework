@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
-from utils.wait_utils import wait_for_element_visible, wait_for_element_clickable
+from utils.wait_utils import wait_for_element_visible
 
 
 class TasksPage(BasePage):
@@ -14,108 +14,58 @@ class TasksPage(BasePage):
         "//button[contains(@class,'btn-primary') and contains(.,'New Task')]"
     )
 
-    title_input = (By.XPATH, "//label[text()='Title']/following::input[1]")
+    title_input = (By.NAME, "title")
 
-    description_textarea = (
+    description_input = (By.NAME, "description")
+
+    status_dropdown = (By.NAME, "status")
+
+    submit_button = (
         By.XPATH,
-        "//label[text()='Description']/following::textarea[1]"
+        "//button[contains(@class,'btn-primary') and contains(.,'Submit')]"
     )
 
-    status_dropdown = (
+    success_message = (
         By.XPATH,
-        "//label[text()='Status']/following::select[1]"
+        "//div[contains(@class,'alert-success')]"
     )
 
-    save_task_button = (
+    blocked_task_edit_button = (
         By.XPATH,
-        "//button[contains(@class,'btn-primary') and contains(.,'Save Task')]"
+        "//tr[.//span[contains(text(),'Blocked')]]//button[contains(@class,'btn')]"
     )
 
-    # Edit button for blocked task
-    edit_blocked_task_button = (
-        By.XPATH,
-        "//tr[.//span[contains(text(),'blocked')]]//button[contains(text(),'Edit')]"
-    )
-
-    # Done status indicator in table
-    done_status_label = (
-        By.XPATH,
-        "//span[contains(text(),'done')]"
-    )
-
-    # ---------------- Page Checks ----------------
+    # ---------------- Page Methods ----------------
 
     def is_tasks_table_visible(self):
-        table = wait_for_element_visible(self.driver, self.tasks_table)
-        return table.is_displayed()
-
-    # ---------------- Create Task ----------------
+        element = wait_for_element_visible(self.driver, self.tasks_table)
+        return element.is_displayed()
 
     def click_new_task(self):
-        wait_for_element_clickable(self.driver, self.new_task_button).click()
+        self.click(self.new_task_button)
 
     def enter_title(self, title):
-        wait_for_element_visible(self.driver, self.title_input).send_keys(title)
+        self.enter_text(self.title_input, title)
 
     def enter_description(self, description):
-        wait_for_element_visible(self.driver, self.description_textarea).send_keys(description)
+        self.enter_text(self.description_input, description)
 
     def select_status(self, status):
-        dropdown = wait_for_element_visible(self.driver, self.status_dropdown)
+        self.enter_text(self.status_dropdown, status)
 
-        options = dropdown.find_elements(By.TAG_NAME, "option")
+    def submit_task(self):
+        self.click(self.submit_button)
 
-        for option in options:
-            if option.text.lower() == status.lower():
-                option.click()
-                break
-
-    def click_save_task(self):
-        wait_for_element_clickable(self.driver, self.save_task_button).click()
-
-    def create_task(self, title, description, status="todo"):
-
-        self.click_new_task()
-        self.enter_title(title)
-        self.enter_description(description)
-        self.select_status(status)
-        self.click_save_task()
-
-    # ---------------- Update Task Status ----------------
+    def is_success_message_visible(self):
+        element = wait_for_element_visible(self.driver, self.success_message)
+        return element.is_displayed()
 
     def open_blocked_task_edit(self):
+        # wait until table loads
+        self.wait_for_element(self.tasks_table)
 
-        # wait until element appears
-        element = wait_for_element_visible(
-            self.driver,
-            self.edit_blocked_task_button
-        )
+        # find blocked task edit button
+        element = wait_for_element_visible(self.driver, self.blocked_task_edit_button)
 
-        # scroll element to center of screen
-        self.driver.execute_script(
-            "arguments[0].scrollIntoView({block:'center'});", element
-        )
-
-        # click using JS to avoid interception
-        self.driver.execute_script(
-            "arguments[0].click();", element
-        )
-
-    def update_status_to_done(self):
-
-        dropdown = wait_for_element_visible(self.driver, self.status_dropdown)
-
-        options = dropdown.find_elements(By.TAG_NAME, "option")
-
-        for option in options:
-            if option.text.lower() == "done":
-                option.click()
-                break
-
-        self.click_save_task()
-
-    def is_task_marked_done(self):
-
-        status = wait_for_element_visible(self.driver, self.done_status_label)
-
-        return status.is_displayed()
+        # click edit
+        element.click()
