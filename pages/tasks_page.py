@@ -76,28 +76,30 @@ class TasksPage(BasePage):
     def create_task(self, title, description, status="todo"):
 
         self.click_new_task()
-
         self.enter_title(title)
-
         self.enter_description(description)
-
         self.select_status(status)
-
         self.click_save_task()
 
     # ---------------- Update Task Status ----------------
 
     def open_blocked_task_edit(self):
 
-        element = wait_for_element_clickable(
+        # wait until element appears
+        element = wait_for_element_visible(
             self.driver,
             self.edit_blocked_task_button
         )
 
-        # scroll to element before clicking
-        self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        # scroll element to center of screen
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});", element
+        )
 
-        element.click()
+        # click using JS to avoid interception
+        self.driver.execute_script(
+            "arguments[0].click();", element
+        )
 
     def update_status_to_done(self):
 
