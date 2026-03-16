@@ -89,10 +89,15 @@ class TasksPage(BasePage):
 
     def open_blocked_task_edit(self):
 
-        wait_for_element_clickable(
+        element = wait_for_element_clickable(
             self.driver,
             self.edit_blocked_task_button
-        ).click()
+        )
+
+        # scroll to element before clicking
+        self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+
+        element.click()
 
     def update_status_to_done(self):
 
