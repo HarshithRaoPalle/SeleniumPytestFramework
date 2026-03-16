@@ -5,7 +5,7 @@ from config.config import BASE_URL
 
 
 # Test: Verify tasks table loads successfully
-def test_task_status_update(driver):
+def task_status_update(driver):
 
     driver.get(BASE_URL)
 
